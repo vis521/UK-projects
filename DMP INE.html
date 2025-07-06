@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Debt Management - Income & Expenditure Sheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .summary-card.income {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .summary-card.surplus {
+            background: linear-gradient(135deg, #a8e6cf, #7fcdcd);
+        }
+
+        .summary-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .summary-card .amount {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2::before {
+            content: "💰";
+            font-size: 1.2rem;
+        }
+
+        .section.expenses h2::before {
+            content: "💸";
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.95rem;
+        }
+
+        .input-group input {
+            padding: 12px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 20px 0 15px 0;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .action-button.save {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .action-button.load {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .action-button.export {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            color: #2c3e50;
+        }
+
+        .action-button.clear {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .client-info {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .client-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .client-info .input-grid {
+            margin-bottom: 0;
+        }
+
+        .timestamp {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #1976d2;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .notes-section {
+            margin-top: 30px;
+        }
+
+        .notes-section textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            background: #f8f9fa;
+        }
+
+        .notes-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                background: white;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+
+            .client-info {
+                background: white !important;
+                border: 2px solid #2c3e50 !important;
+                page-break-inside: avoid;
+            }
+
+            .timestamp {
+                background: white !important;
+                border: 2px solid #2c3e50 !important;
+                color: #2c3e50 !important;
+                page-break-inside: avoid;
+            }
+            
+            .summary-card {
+                background: #f8f9fa !important;
+                color: #2c3e50 !important;
+                border: 2px solid #dee2e6 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .summary-cards {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                margin-bottom: 30px !important;
+                page-break-inside: avoid;
+            }
+            
+            .summary-card h3 {
+                color: #2c3e50 !important;
+                font-weight: bold !important;
+            }
+            
+            .summary-card .amount {
+                color: #2c3e50 !important;
+                font-weight: bold !important;
+                font-size: 1.8rem !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Income & Expenditure Sheet</h1>
+            <p>UK Debt Management Program</p>
+        </div>
+
+        <div class="client-info">
+            <h3>👤 Client Information</h3>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="clientName">Client Name</label>
+                    <input type="text" id="clientName" placeholder="Enter client name">
+                </div>
+                <div class="input-group">
+                    <label for="clientRef">Reference Number</label>
+                    <input type="text" id="clientRef" placeholder="Enter reference number">
+                </div>
+                <div class="input-group">
+                    <label for="advisorName">Advisor Name</label>
+                    <input type="text" id="advisorName" placeholder="Enter advisor name">
+                </div>
+                <div class="input-group">
+                    <label for="reviewDate">Review Date</label>
+                    <input type="date" id="reviewDate">
+                </div>
+            </div>
+        </div>
+
+        <div class="timestamp" id="timestamp">
+            Document created: <span id="createdDate">Not saved</span> | 
+            Last updated: <span id="lastUpdated">Not saved</span>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-button save" onclick="saveData()">
+                💾 Save Data
+            </button>
+            <button class="action-button load" onclick="document.getElementById('fileInput').click()">
+                📂 Load Data
+            </button>
+            <button class="action-button export" onclick="exportToCSV()">
+                📊 Export CSV
+            </button>
+            <button class="action-button" onclick="generateExcelReport()">
+                📊 Generate Excel Statement
+            </button>
+            <button class="action-button clear" onclick="clearAllData()">
+                🗑️ Clear All
+            </button>
+        </div>
+
+        <input type="file" id="fileInput" class="file-input" accept=".json" onchange="loadData(event)">
+
+        <div class="summary-cards">
+            <div class="summary-card income">
+                <h3>Total Monthly Income</h3>
+                <div class="amount" id="totalIncome">£0.00</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total Monthly Expenditure</h3>
+                <div class="amount" id="totalExpenditure">£0.00</div>
+            </div>
+            <div class="summary-card surplus">
+                <h3>Monthly Surplus/Deficit</h3>
+                <div class="amount" id="monthlySurplus">£0.00</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Monthly Income</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="salary">Salary/Wages (after tax)</label>
+                    <input type="number" id="salary" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="partnerSalary">Partner's Salary/Wages (after tax)</label>
+                    <input type="number" id="partnerSalary" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="benefits">Benefits (JSA/UC/ESA/PIP/DLA)</label>
+                    <input type="number" id="benefits" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="pension">State/Private Pension</label>
+                    <input type="number" id="pension" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="childBenefit">Child Benefit/Tax Credits</label>
+                    <input type="number" id="childBenefit" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="otherIncome">Other Income</label>
+                    <input type="number" id="otherIncome" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+        </div>
+
+        <div class="section expenses">
+            <h2>Monthly Expenditure</h2>
+
+            <div class="category-header">🏠 Housing Costs</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="rent">Rent/Mortgage</label>
+                    <input type="number" id="rent" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="councilTax">Council Tax</label>
+                    <input type="number" id="councilTax" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="buildings">Buildings/Contents Insurance</label>
+                    <input type="number" id="buildings" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="maintenance">Property Maintenance</label>
+                    <input type="number" id="maintenance" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">⚡ Utilities</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="gas">Gas & Electricity</label>
+                    <input type="number" id="gas" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="water">Water</label>
+                    <input type="number" id="water" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="phone">Phone/Mobile</label>
+                    <input type="number" id="phone" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="internet">Internet/TV</label>
+                    <input type="number" id="internet" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">🚗 Transport</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="carLoan">Car Loan/HP</label>
+                    <input type="number" id="carLoan" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="carInsurance">Car Insurance</label>
+                    <input type="number" id="carInsurance" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="fuel">Fuel</label>
+                    <input type="number" id="fuel" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="publicTransport">Public Transport</label>
+                    <input type="number" id="publicTransport" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="mot">MOT/Servicing/Repairs</label>
+                    <input type="number" id="mot" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">🍽️ Living Costs</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="food">Food & Groceries</label>
+                    <input type="number" id="food" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="clothing">Clothing</label>
+                    <input type="number" id="clothing" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="household">Household Items</label>
+                    <input type="number" id="household" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="personal">Personal Care</label>
+                    <input type="number" id="personal" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">👨‍👩‍👧‍👦 Family & Dependents</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="childcare">Childcare/Nursery</label>
+                    <input type="number" id="childcare" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="schoolCosts">School Costs</label>
+                    <input type="number" id="schoolCosts" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="csa">Child Support/Maintenance</label>
+                    <input type="number" id="csa" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="dependents">Care for Dependents</label>
+                    <input type="number" id="dependents" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">🏥 Health & Insurance</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="healthInsurance">Health Insurance</label>
+                    <input type="number" id="healthInsurance" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="lifeInsurance">Life Insurance</label>
+                    <input type="number" id="lifeInsurance" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="prescriptions">Prescriptions/Medical</label>
+                    <input type="number" id="prescriptions" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="dental">Dental/Optical</label>
+                    <input type="number" id="dental" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">🎯 Essential Commitments</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="courtFines">Court Fines/Orders</label>
+                    <input type="number" id="courtFines" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="securedLoans">Secured Loans</label>
+                    <input type="number" id="securedLoans" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="priorityDebts">Priority Debts</label>
+                    <input type="number" id="priorityDebts" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="pension2">Pension Contributions</label>
+                    <input type="number" id="pension2" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">🎪 Leisure & Social</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="entertainment">Entertainment/Leisure</label>
+                    <input type="number" id="entertainment" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="hobbies">Hobbies/Sports</label>
+                    <input type="number" id="hobbies" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="gifts">Gifts/Donations</label>
+                    <input type="number" id="gifts" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="savings">Savings/Investments</label>
+                    <input type="number" id="savings" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="category-header">📋 Other Expenses</div>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="pets">Pet Care</label>
+                    <input type="number" id="pets" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="subscriptions">Subscriptions/Memberships</label>
+                    <input type="number" id="subscriptions" step="0.01" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label for="otherExpenses">Other Expenses</label>
+                    <input type="number" id="otherExpenses" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+        </div>
+
+        <div class="section notes-section">
+            <h2>Additional Notes</h2>
+            <textarea placeholder="Include any additional information about your financial situation, changes in circumstances, or specific details about your income and expenditure that may be relevant to your debt management plan..."></textarea>
+        </div>
+
+        <button class="action-button" onclick="generateExcelReport()">📊 Generate Excel Statement</button>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Calculate totals when inputs change
+        const incomeFields = ['salary', 'partnerSalary', 'benefits', 'pension', 'childBenefit', 'otherIncome'];
+        const expenseFields = ['rent', 'councilTax', 'buildings', 'maintenance', 'gas', 'water', 'phone', 'internet', 
+                             'carLoan', 'carInsurance', 'fuel', 'publicTransport', 'mot', 'food', 'clothing', 
+                             'household', 'personal', 'childcare', 'schoolCosts', 'csa', 'dependents', 
+                             'healthInsurance', 'lifeInsurance', 'prescriptions', 'dental', 'courtFines', 
+                             'securedLoans', 'priorityDebts', 'pension2', 'entertainment', 'hobbies', 'gifts', 
+                             'savings', 'pets', 'subscriptions', 'otherExpenses'];
+        const clientFields = ['clientName', 'clientRef', 'advisorName', 'reviewDate'];
+
+        // Check if XLSX library is loaded
+        let xlsxLoaded = false;
+        
+        function checkXLSXLibrary() {
+            if (typeof XLSX !== 'undefined') {
+                xlsxLoaded = true;
+                return true;
+            }
+            return false;
+        }
+
+        // Wait for XLSX to load
+        function waitForXLSX() {
+            return new Promise((resolve) => {
+                if (checkXLSXLibrary()) {
+                    resolve(true);
+                    return;
+                }
+                
+                let attempts = 0;
+                const maxAttempts = 50;
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    if (checkXLSXLibrary() || attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        resolve(checkXLSXLibrary());
+                    }
+                }, 100);
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const dateString = now.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('lastUpdated').textContent = dateString;
+        }
+
+        function saveData() {
+            const data = {
+                clientInfo: {},
+                income: {},
+                expenses: {},
+                notes: document.querySelector('textarea').value,
+                createdDate: new Date().toISOString(),
+                lastUpdated: new Date().toISOString()
+            };
+
+            // Save client info
+            clientFields.forEach(field => {
+                data.clientInfo[field] = document.getElementById(field).value;
+            });
+
+            // Save income data
+            incomeFields.forEach(field => {
+                data.income[field] = document.getElementById(field).value;
+            });
+
+            // Save expense data
+            expenseFields.forEach(field => {
+                data.expenses[field] = document.getElementById(field).value;
+            });
+
+            // Create filename with client name and date
+            const clientName = data.clientInfo.clientName || 'Client';
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `${clientName.replace(/[^a-zA-Z0-9]/g, '_')}_Income_Expenditure_${date}.json`;
+
+            // Create and download file with proper attributes
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            
+            // Force download
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+
+            // Update timestamps
+            document.getElementById('createdDate').textContent = new Date().toLocaleString('en-GB');
+            updateTimestamp();
+
+            showNotification('Data saved successfully!');
+        }
+
+        function loadData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    // Load client info
+                    if (data.clientInfo) {
+                        clientFields.forEach(field => {
+                            if (data.clientInfo[field]) {
+                                document.getElementById(field).value = data.clientInfo[field];
+                            }
+                        });
+                    }
+
+                    // Load income data
+                    if (data.income) {
+                        incomeFields.forEach(field => {
+                            if (data.income[field]) {
+                                document.getElementById(field).value = data.income[field];
+                            }
+                        });
+                    }
+
+                    // Load expense data
+                    if (data.expenses) {
+                        expenseFields.forEach(field => {
+                            if (data.expenses[field]) {
+                                document.getElementById(field).value = data.expenses[field];
+                            }
+                        });
+                    }
+
+                    // Load notes
+                    if (data.notes) {
+                        document.querySelector('textarea').value = data.notes;
+                    }
+
+                    // Update timestamps
+                    if (data.createdDate) {
+                        document.getElementById('createdDate').textContent = new Date(data.createdDate).toLocaleString('en-GB');
+                    }
+                    updateTimestamp();
+
+                    // Recalculate totals
+                    calculateTotals();
+
+                    showNotification('Data loaded successfully!');
+                } catch (error) {
+                    showNotification('Error loading file. Please check the file format.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function generateExcelReport() {
+            // Check if XLSX library is available
+            const isXLSXReady = await waitForXLSX();
+            
+            if (!isXLSXReady) {
+                showNotification('Excel library failed to load. Please refresh the page and try again.', 'error');
+                return;
+            }
+
+            try {
+                // Show loading notification
+                showNotification('Generating Excel statement...', 'success');
+
+                // Create a new workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Prepare data arrays
+                const summaryData = [];
+                const incomeData = [];
+                const expenseData = [];
+                
+                // Client Information
+                summaryData.push(['UK DEBT MANAGEMENT - INCOME & EXPENDITURE STATEMENT']);
+                summaryData.push(['']);
+                summaryData.push(['CLIENT INFORMATION']);
+                summaryData.push(['Client Name:', document.getElementById('clientName').value || 'Not provided']);
+                summaryData.push(['Reference Number:', document.getElementById('clientRef').value || 'Not provided']);
+                summaryData.push(['Advisor Name:', document.getElementById('advisorName').value || 'Not provided']);
+                summaryData.push(['Review Date:', document.getElementById('reviewDate').value || 'Not provided']);
+                summaryData.push(['Statement Generated:', new Date().toLocaleString('en-GB')]);
+                summaryData.push(['']);
+                
+                // Financial Summary
+                summaryData.push(['FINANCIAL SUMMARY']);
+                summaryData.push(['Total Monthly Income:', document.getElementById('totalIncome').textContent]);
+                summaryData.push(['Total Monthly Expenditure:', document.getElementById('totalExpenditure').textContent]);
+                summaryData.push(['Monthly Surplus/Deficit:', document.getElementById('monthlySurplus').textContent]);
+                summaryData.push(['']);
+
+                // Income breakdown
+                incomeData.push(['MONTHLY INCOME BREAKDOWN']);
+                incomeData.push(['Category', 'Amount (£)']);
+                
+                let totalIncomeCalc = 0;
+                incomeFields.forEach(field => {
+                    const label = document.querySelector(`label[for="${field}"]`).textContent;
+                    const value = parseFloat(document.getElementById(field).value) || 0;
+                    totalIncomeCalc += value;
+                    incomeData.push([label, value]);
+                });
+                incomeData.push(['TOTAL INCOME', totalIncomeCalc]);
+                incomeData.push(['']);
+
+                // Expense breakdown by category
+                expenseData.push(['MONTHLY EXPENDITURE BREAKDOWN']);
+                expenseData.push(['Category', 'Amount (£)']);
+                
+                const expenseCategories = [
+                    { title: 'HOUSING COSTS', fields: ['rent', 'councilTax', 'buildings', 'maintenance'] },
+                    { title: 'UTILITIES', fields: ['gas', 'water', 'phone', 'internet'] },
+                    { title: 'TRANSPORT', fields: ['carLoan', 'carInsurance', 'fuel', 'publicTransport', 'mot'] },
+                    { title: 'LIVING COSTS', fields: ['food', 'clothing', 'household', 'personal'] },
+                    { title: 'FAMILY & DEPENDENTS', fields: ['childcare', 'schoolCosts', 'csa', 'dependents'] },
+                    { title: 'HEALTH & INSURANCE', fields: ['healthInsurance', 'lifeInsurance', 'prescriptions', 'dental'] },
+                    { title: 'ESSENTIAL COMMITMENTS', fields: ['courtFines', 'securedLoans', 'priorityDebts', 'pension2'] },
+                    { title: 'LEISURE & SOCIAL', fields: ['entertainment', 'hobbies', 'gifts', 'savings'] },
+                    { title: 'OTHER EXPENSES', fields: ['pets', 'subscriptions', 'otherExpenses'] }
+                ];
+
+                let totalExpenseCalc = 0;
+                expenseCategories.forEach(category => {
+                    expenseData.push([category.title, '']);
+                    let categoryTotal = 0;
+                    category.fields.forEach(field => {
+                        const label = document.querySelector(`label[for="${field}"]`).textContent;
+                        const value = parseFloat(document.getElementById(field).value) || 0;
+                        categoryTotal += value;
+                        totalExpenseCalc += value;
+                        expenseData.push([`  ${label}`, value]);
+                    });
+                    expenseData.push([`${category.title} SUBTOTAL`, categoryTotal]);
+                    expenseData.push(['', '']);
+                });
+                
+                expenseData.push(['TOTAL EXPENDITURE', totalExpenseCalc]);
+                expenseData.push(['']);
+                expenseData.push(['NET SURPLUS/DEFICIT', totalIncomeCalc - totalExpenseCalc]);
+
+                // Create worksheets
+                const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+                const incomeWs = XLSX.utils.aoa_to_sheet(incomeData);
+                const expenseWs = XLSX.utils.aoa_to_sheet(expenseData);
+                
+                // Set column widths
+                summaryWs['!cols'] = [{ width: 40 }, { width: 20 }];
+                incomeWs['!cols'] = [{ width: 40 }, { width: 15 }];
+                expenseWs['!cols'] = [{ width: 40 }, { width: 15 }];
+
+                // Add worksheets to workbook
+                XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+                XLSX.utils.book_append_sheet(wb, incomeWs, "Income");
+                XLSX.utils.book_append_sheet(wb, expenseWs, "Expenses");
+
+                // Create analysis sheet
+                const analysisData = [];
+                analysisData.push(['FINANCIAL ANALYSIS & RECOMMENDATIONS']);
+                analysisData.push(['']);
+                
+                const surplus = totalIncomeCalc - totalExpenseCalc;
+                analysisData.push(['DEBT CAPACITY ASSESSMENT']);
+                analysisData.push(['Available for Debt Payments:', `£${surplus.toFixed(2)}`]);
+                analysisData.push(['']);
+                
+                analysisData.push(['RECOMMENDED ACTIONS']);
+                if (surplus > 0) {
+                    analysisData.push(['✓ Client has positive surplus for debt repayment']);
+                    analysisData.push(['✓ Recommend debt management plan']);
+                    analysisData.push(['✓ Consider additional voluntary payments']);
+                } else if (surplus === 0) {
+                    analysisData.push(['⚠ Client has balanced budget']);
+                    analysisData.push(['⚠ Review for potential savings']);
+                    analysisData.push(['⚠ Consider debt consolidation options']);
+                } else {
+                    analysisData.push(['⚠ Client has budget deficit']);
+                    analysisData.push(['⚠ Priority review of essential expenditure']);
+                    analysisData.push(['⚠ Consider debt relief options']);
+                    analysisData.push(['⚠ Referral to specialist debt advisor recommended']);
+                }
+
+                analysisData.push(['']);
+                analysisData.push(['EXPENDITURE ANALYSIS']);
+                
+                if (totalIncomeCalc > 0) {
+                    const housingCost = parseFloat(document.getElementById('rent').value) || 0;
+                    const transportCost = (parseFloat(document.getElementById('carLoan').value) || 0) + 
+                                        (parseFloat(document.getElementById('fuel').value) || 0) + 
+                                        (parseFloat(document.getElementById('carInsurance').value) || 0);
+                    const foodCost = parseFloat(document.getElementById('food').value) || 0;
+                    
+                    analysisData.push(['Housing costs as % of income:', `${(housingCost / totalIncomeCalc * 100).toFixed(1)}%`]);
+                    analysisData.push(['Transport costs as % of income:', `${(transportCost / totalIncomeCalc * 100).toFixed(1)}%`]);
+                    analysisData.push(['Food costs as % of income:', `${(foodCost / totalIncomeCalc * 100).toFixed(1)}%`]);
+                }
+
+                // Add notes if available
+                const notes = document.querySelector('textarea').value;
+                if (notes) {
+                    analysisData.push(['']);
+                    analysisData.push(['ADDITIONAL NOTES']);
+                    analysisData.push([notes]);
+                }
+
+                const analysisWs = XLSX.utils.aoa_to_sheet(analysisData);
+                analysisWs['!cols'] = [{ width: 40 }, { width: 20 }];
+                XLSX.utils.book_append_sheet(wb, analysisWs, "Analysis");
+
+                // Generate filename
+                const clientName = document.getElementById('clientName').value || 'Client';
+                const date = new Date().toISOString().split('T')[0];
+                const filename = `${clientName.replace(/[^a-zA-Z0-9]/g, '_')}_Income_Expenditure_Statement_${date}.xlsx`;
+
+                // Write and download file
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                
+                // Create download link with proper attributes
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                
+                // Force download by temporarily adding to DOM and clicking
+                document.body.appendChild(a);
+                
+                // Use both click methods for better compatibility
+                if (a.click) {
+                    a.click();
+                } else {
+                    // Fallback for older browsers
+                    const evt = document.createEvent('MouseEvents');
+                    evt.initEvent('click', true, true);
+                    a.dispatchEvent(evt);
+                }
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+                
+                showNotification('Excel statement generated and downloaded successfully!');
+                
+            } catch (error) {
+                console.error('Error generating Excel statement:', error);
+                showNotification('Error generating Excel statement. Please try again.', 'error');
+            }
+        }
+
+        function exportToCSV() {
+            const data = [];
+            
+            // Client information
+            data.push(['CLIENT INFORMATION']);
+            data.push(['Client Name', document.getElementById('clientName').value]);
+            data.push(['Reference Number', document.getElementById('clientRef').value]);
+            data.push(['Advisor Name', document.getElementById('advisorName').value]);
+            data.push(['Review Date', document.getElementById('reviewDate').value]);
+            data.push(['']);
+
+            // Income section
+            data.push(['MONTHLY INCOME']);
+            data.push(['Category', 'Amount (£)']);
+            incomeFields.forEach(field => {
+                const label = document.querySelector(`label[for="${field}"]`).textContent;
+                const value = document.getElementById(field).value || '0.00';
+                data.push([label, value]);
+            });
+            data.push(['Total Income', document.getElementById('totalIncome').textContent.replace('£', '')]);
+            data.push(['']);
+
+            // Expenses section
+            data.push(['MONTHLY EXPENDITURE']);
+            data.push(['Category', 'Amount (£)']);
+            expenseFields.forEach(field => {
+                const label = document.querySelector(`label[for="${field}"]`).textContent;
+                const value = document.getElementById(field).value || '0.00';
+                data.push([label, value]);
+            });
+            data.push(['Total Expenditure', document.getElementById('totalExpenditure').textContent.replace('£', '')]);
+            data.push(['']);
+
+            // Summary
+            data.push(['SUMMARY']);
+            data.push(['Total Income', document.getElementById('totalIncome').textContent.replace('£', '')]);
+            data.push(['Total Expenditure', document.getElementById('totalExpenditure').textContent.replace('£', '')]);
+            data.push(['Monthly Surplus/Deficit', document.getElementById('monthlySurplus').textContent.replace('£', '')]);
+            data.push(['']);
+
+            // Notes
+            const notes = document.querySelector('textarea').value;
+            if (notes) {
+                data.push(['NOTES']);
+                data.push([notes]);
+            }
+
+            // Convert to CSV
+            const csvContent = data.map(row => 
+                row.map(cell => `"${cell}"`).join(',')
+            ).join('\n');
+
+            // Download CSV
+            const clientName = document.getElementById('clientName').value || 'Client';
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `${clientName.replace(/[^a-zA-Z0-9]/g, '_')}_Income_Expenditure_${date}.csv`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            
+            // Force download
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+
+            showNotification('CSV exported successfully!');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                // Clear all input fields
+                [...clientFields, ...incomeFields, ...expenseFields].forEach(field => {
+                    document.getElementById(field).value = '';
+                });
+                
+                // Clear textarea
+                document.querySelector('textarea').value = '';
+                
+                // Reset timestamps
+                document.getElementById('createdDate').textContent = 'Not saved';
+                document.getElementById('lastUpdated').textContent = 'Not saved';
+                
+                // Recalculate totals
+                calculateTotals();
+                
+                showNotification('All data cleared successfully!');
+            }
+        }
+
+        function calculateTotals() {
+            let totalIncome = 0;
+            let totalExpenditure = 0;
+
+            // Calculate total income
+            incomeFields.forEach(field => {
+                const value = parseFloat(document.getElementById(field).value) || 0;
+                totalIncome += value;
+            });
+
+            // Calculate total expenditure
+            expenseFields.forEach(field => {
+                const value = parseFloat(document.getElementById(field).value) || 0;
+                totalExpenditure += value;
+            });
+
+            // Calculate surplus/deficit
+            const surplus = totalIncome - totalExpenditure;
+
+            // Update display
+            document.getElementById('totalIncome').textContent = '£' + totalIncome.toFixed(2);
+            document.getElementById('totalExpenditure').textContent = '£' + totalExpenditure.toFixed(2);
+            document.getElementById('monthlySurplus').textContent = '£' + surplus.toFixed(2);
+
+            // Update surplus card color based on positive/negative
+            const surplusCard = document.querySelector('.summary-card.surplus');
+            if (surplus >= 0) {
+                surplusCard.style.background = 'linear-gradient(135deg, #a8e6cf, #7fcdcd)';
+            } else {
+                surplusCard.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+            }
+        }
+
+        // Initial setup when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date as default review date
+            document.getElementById('reviewDate').value = new Date().toISOString().split('T')[0];
+            
+            // Check XLSX library status
+            waitForXLSX().then(loaded => {
+                if (!loaded) {
+                    console.warn('XLSX library failed to load');
+                    showNotification('Excel functionality may be limited. Please refresh the page.', 'error');
+                }
+            });
+            
+            // Initial calculation
+            calculateTotals();
+        });
+
+        // Add event listeners to all inputs
+        [...clientFields, ...incomeFields, ...expenseFields].forEach(field => {
+            document.getElementById(field).addEventListener('input', () => {
+                calculateTotals();
+                updateTimestamp();
+            });
+        });
+
+        // Add event listener to textarea
+        document.querySelector('textarea').addEventListener('input', updateTimestamp);
+
+        // Initial calculation
+        calculateTotals();
+    </script>
+</body>
+</html>
